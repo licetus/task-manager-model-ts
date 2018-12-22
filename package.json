@@ -1,0 +1,30 @@
+{
+  "name": "task-manager-model-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "test"
+  },
+  "dependencies": {
+    "pg": "^7.7.1",
+    "pg-then": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "typescript": "^3.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/licetus/task-manager-model-ts.git"
+  },
+  "author": "licetus",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/licetus/task-manager-model-ts/issues"
+  },
+  "homepage": "https://github.com/licetus/task-manager-model-ts#readme"
+}
