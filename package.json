@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "test"
+    "test": "tsc"
   },
   "dependencies": {
     "pg": "^7.7.1",
