@@ -1,4 +1,3 @@
-import camelcase from 'camelcase'
 import decamelize from 'decamelize'
 
 export const sqlizeListParams = (primaryKey: string, params: any, isSum = false) => {
