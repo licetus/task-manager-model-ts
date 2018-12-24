@@ -16,10 +16,12 @@
   "devDependencies": {
     "@types/bluebird": "^3.5.25",
     "@types/chai": "^4.1.7",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/del": "^3.0.1",
     "@types/mocha": "^5.2.5",
     "@types/pg": "^7.4.11",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^5.2.0",
     "typescript": "^3.2.2"
   },
