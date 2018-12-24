@@ -11,7 +11,7 @@ interface ManagerConfig {
 export class PgManager {
   private connections: PgConnection[]
   public version?: string | number
-  public defaultConnection: PgConnection = this.connections[0]
+  private defaultConnection: PgConnection | null = null
   constructor(config: ManagerConfig) {
     this.connections = config.connections
     this.version = config.version
@@ -21,9 +21,10 @@ export class PgManager {
         break
       }
     }
+    if (!this.defaultConnection) this.defaultConnection = config.connections[0]
   }
   async dropDbIfExists() {
-    const dbname = this.defaultConnection.database
+    const dbname = (this.defaultConnection as PgConnection).database 
     const queryTerminate = `
 			SELECT pg_terminate_backend(pg_stat_activity.pid)
 			FROM pg_stat_activity
@@ -35,7 +36,7 @@ export class PgManager {
   }
 
   async createDbIfNotExist() {
-    const dbname = this.defaultConnection.database
+    const dbname = (this.defaultConnection as PgConnection).database
     const queryCheck = `
       SELECT 1 AS exists
       FROM pg_database

@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "initdb": "./node_modules/.bin/tsc ./bin/init.ts --lib esnext --resolveJsonModule"
+    "build": "tsc ./bin/init.ts --lib esnext --resolveJsonModule --showConfig",
+    "initdb": "ts-node --project ./tsconfig.json bin/init.ts"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
     "del": "^3.0.0",
     "log4js": "^3.0.6",
     "pg": "^7.7.1",
-    "pg-then": "^1.2.1"
+    "pg-then": "^1.2.1",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.25",
