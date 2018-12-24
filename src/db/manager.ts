@@ -1,10 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { PgConnection } from './connections'
-import { Database } from '../db'
-import config from '../../test/config/config.json'
-
-const db = new Database(config as Database)
+import { db, Database } from '../db'
 
 interface ManagerConfig {
   connections: PgConnection[]

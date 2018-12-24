@@ -1,5 +1,6 @@
 import { Client as PgClient, QueryConfig as QC } from 'pg'
 import { PgConnection } from './connections'
+import config from '../../test/config/config.json'
 
 class QueryConfig implements QC {
   readonly name?: string
@@ -119,5 +120,8 @@ export class Database {
     }
   }
 }
+
+export const db = new Database(config as Database)
+
 
 
