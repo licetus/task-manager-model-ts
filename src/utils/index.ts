@@ -7,7 +7,7 @@ export const sqlizeListParams = (primaryKey: string, params: any, isSum = false)
   let orderBy = ''
   let limit = ''
   if (!isSum) {
-    orderBy = params.orderBy ? `ORDER BY ${decamelize(params.orderBy)}` : `ORDER BY ${name} DESC`
+    orderBy = params.orderBy ? `ORDER BY ${decamelize(params.orderBy)}` : `ORDER BY ${pKey} DESC`
     if (params.page || params.page === 0) {
       const pageSize = params.pageSize || 10
       limit = `LIMIT ${pageSize} OFFSET ${params.page * pageSize}`
