@@ -2,7 +2,7 @@
   "database": {
     "postgres": [
       {
-        "database": "task-manager",
+        "database": "test-db",
         "user": "postgres",
         "password": "postgres",
         "host": "localhost",

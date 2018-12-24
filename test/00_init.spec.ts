@@ -2,7 +2,7 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import log4js from 'log4js'
 import { PgManager } from '../src/db/manager'
-import config from './config/config.json'
+import * as config from './config/config.json'
 
 chai.use(chaiAsPromised)
 chai.should()

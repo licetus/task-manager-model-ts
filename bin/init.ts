@@ -1,8 +1,9 @@
-import log4js from 'log4js'
-import config from '../test/config/config.json'
+import { getLogger } from 'log4js'
 import { PgManager } from '../src/db/manager'
+import * as config from '../test/config/config.json'
 
-const log = log4js.getLogger()
+// const config = require('../test/config/config.json')
+const log = getLogger()
 
 const init = async () => {
   const managerConfig = {

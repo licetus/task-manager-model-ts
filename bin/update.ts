@@ -1,5 +1,5 @@
 import log4js from 'log4js'
-import config from '../test/config/config.json'
+import * as config from '../test/config/config.json'
 import { PgManager } from '../src/db/manager'
 
 const log = log4js.getLogger()

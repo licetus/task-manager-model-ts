@@ -1,6 +1,8 @@
 import { Client as PgClient, QueryConfig as QC } from 'pg'
 import { PgConnection } from './connections'
-import config from '../../test/config/config.json'
+import * as config from '../../test/config/config.json'
+
+// const config = require('../../test/config/config.json')
 
 class QueryConfig implements QC {
   readonly name?: string
