@@ -35,7 +35,6 @@ export class PgManager {
       WHERE datname = $1
     `
     const res = await db.query('postgres', queryCheck, [dbname])
-    console.log('Res: ', res)
     if (res.length === 0) {
       const queryCreate = `CREATE DATABASE "${dbname}"`
       await db.query('postgres', queryCreate)
@@ -79,6 +78,7 @@ export class PgManager {
     patchFolders.sort((a: any[], b: any[]) => {
       return a[0] - b[0]
     })
+    console.log('patch', patchFolders)
     return patchFolders
   }
 
@@ -100,7 +100,7 @@ export class PgManager {
         const ver = await this.getCurrentVersion()
         if (patchVer <= ver) continue
         const files = fs.readdirSync(patchPath)
-        if (files.includes('updata.js')) {
+        if (files.includes('update.js')) {
           const updatorPath = '.' + path.join(patchPath, 'update.js').slice(__dirname.length)
           const updator = require(updatorPath)
           await updator.putPatch(client)

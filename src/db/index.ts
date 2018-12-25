@@ -77,7 +77,6 @@ export class Database {
     const client = this.getClient(this.database.postgres, queryConfig.name)
     try {
       const res = await client.query(queryConfig)
-      console.log(res)
       return res
     } catch (error) {
       throw error
