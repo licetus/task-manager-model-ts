@@ -2,14 +2,14 @@ import fs from 'fs'
 import path from 'path'
 import { Database } from '../src/db'
 import { sqlizeListParams } from '../src/utils'
-import config from './config/config.json'
 
-const db = new Database(config)
+const db = new Database()
 
 describe('* Test data ============================', () => {
   it('Create fake test data', async () => {
     const dataPath = path.join(__dirname, 'data')
-    const files = fs.readFileSync(dataPath)
+    console.log('files: ')
+    const files = fs.readdirSync(dataPath)
     files.sort()
     const queryArr = []
     for (const f of files) {
@@ -45,6 +45,6 @@ describe('* Test generate list params =============', () => {
       orderBy: 'id desc',
     }
     const str = sqlizeListParams('id', params)
-    str.should.equal(' ORDER BY id DESC LIMIT 10')
+    str.should.equal('  ORDER BY id desc LIMIT 10')
   })
 })
