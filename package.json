@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "initdb": "tsc; node dist/bin/init.js"
+    "initdb": "tsc; node build/bin/init.js"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
