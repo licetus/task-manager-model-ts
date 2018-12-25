@@ -1,7 +1,7 @@
 import pgPromise from 'pg-promise'
 import { findIndex } from 'lodash'
 import { PgClientConfig, PgQueryConfig } from './classes'
-import * as config from '../../test/config/config.json'
+import config from '../../test/config/config.json'
 
 const pgp = pgPromise({
   // connect(client) {
@@ -27,7 +27,8 @@ export class Database {
   readonly secret?: any = { hash: '' }
   private localClientConfig: PgClientConfig
 
-  constructor(dbConfig: DatabaseConfig) {
+  constructor(dbConfig?: DatabaseConfig) {
+    if (!dbConfig) dbConfig = config
     this.database = dbConfig.database
     if (dbConfig.secret) {
       if (dbConfig.secret.hash) this.secret.hash = dbConfig.secret.hash

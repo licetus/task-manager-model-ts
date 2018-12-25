@@ -1,7 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import { db } from '../src/db'
+import { Database } from '../src/db'
 import { sqlizeListParams } from '../src/utils'
+import config from './config/config.json'
+
+const db = new Database(config)
 
 describe('* Test data ============================', () => {
   it('Create fake test data', async () => {

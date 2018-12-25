@@ -3,20 +3,25 @@ import * as path from 'path'
 import { Database, DatabaseConfig } from '../db'
 
 interface PgManagerConfig {
-  pgConfig: DatabaseConfig
+  pgConfig?: DatabaseConfig
   version?: string | number
 }
 
 export class PgManager {
   public version?: string | number
-  private pgConfig: DatabaseConfig
+
+  private pgConfig?: DatabaseConfig
   private db: Database
-  constructor(config: PgManagerConfig) {
-    if (config && config.version) {
-      this.version = config.version
+  constructor(config?: PgManagerConfig) {
+    if (config) {
+      if (config.version) {
+        this.version = config.version
+      }
+      if (config.pgConfig) {
+        this.pgConfig = config.pgConfig
+      }
     }
-    this.pgConfig = config.pgConfig
-    this.db = new Database(config.pgConfig)
+    this.db = new Database(this.pgConfig)
   }
   private async dropDbIfExists() {
     const dbname = this.db.getLocalDatabase()
