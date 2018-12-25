@@ -44,7 +44,7 @@ export class Database {
   }
 
   public query = async (...args: any[]) => {
-    const config = new QueryConfig(args)
+    const config = new QueryConfig(...args)
     const dbname = config.name
     if (this.database.postgres.length === 0) {
       throw new Error('No Connection')
@@ -72,11 +72,14 @@ export class Database {
     }
     const client = new PgClient(connection)
     try {
-      const res = await client.query(config).then((res) => res)
+      console.log(client.query(config))
+      const res = client.query(config).then((res) => res)
+      console.log('res: ', res)
       return res
     } catch (error) {
       throw error
     } finally {
+      console.log('end')
       client.end()
     }
   }
@@ -86,7 +89,7 @@ export class Database {
       throw new Error('No Connection')
     }
     let connection: PgConnection | null = null
-    if (dbname) {
+    if (dbname && dbname) {
       for (const item of this.database.postgres) {
         if (item.database === dbname) {
           connection = new PgConnection(item)

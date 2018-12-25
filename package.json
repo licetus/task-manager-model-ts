@@ -12,8 +12,7 @@
     "del": "^3.0.0",
     "log4js": "^3.0.6",
     "pg": "^7.7.1",
-    "pg-then": "^1.2.1",
-    "tslib": "^1.9.3"
+    "pg-then": "^1.2.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.25",

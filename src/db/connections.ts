@@ -7,7 +7,7 @@ export class PgConnection implements ConnectionConfig {
   readonly host?: string
   readonly port?: number
   readonly connectionString?: string
-  readonly default?: boolean
+  readonly default?: boolean = false
 
   constructor(config: PgConnection) {
     this.database = config.database
