@@ -1,117 +1,96 @@
-import { Client as PgClient, QueryConfig as QC } from 'pg'
-import { PgConnection } from './connections'
+import pgPromise from 'pg-promise'
+import { findIndex } from 'lodash'
+import { PgClientConfig, PgQueryConfig } from './classes'
 import * as config from '../../test/config/config.json'
+import { QueryConfig } from 'pg';
+import { disconnect } from 'cluster';
 
 // const config = require('../../test/config/config.json')
-
-class QueryConfig implements QC {
-  readonly name?: string
-  readonly text: string = ''
-  readonly values?: any[]
-  constructor(...args: any[]) {
-    switch (args.length) {
-      case 3:
-        this.name = args[0]
-        this.text = args[1]
-        this.values = args[2]
-        break
-      case 2:
-        if (typeof args[1] === 'string') {
-          this.text = args[0]
-          this.values = args[1]
-        } else {
-          this.name = args[0]
-          this.text = args[1]
-        }
-        break
-      case 1:
-        this.text = args[0]
-        break
-      default:
-        break
+const pgp = pgPromise({
+  connect(client) {
+    console.log(`Connect to database [${client.database}]`)
+  },
+  disconnect(client) {
+    console.log(`Disconnect database [${client.database}]`)
+  },
+  query(e) {
+    console.log('Query: ', e.query)
+  },
+  transact(e) {
+    if (e.ctx.finish) {
+      console.log('Duration: ', e.ctx.duration)
+      if (e.ctx.success) {
+        // e.ctx.result = resolved data
+      } else {
+        // e.ctx.result = error/rejection reason
+      }
+    } else {
+      console.log('Start Time:', e.ctx.start)
     }
   }
-}
+})
 
 export class Database {
-  readonly database: { postgres: PgConnection[] }
+  readonly database: { postgres: PgClientConfig[] }
   readonly secret: any = { hash: '' }
-  constructor(config: Database) {
-    this.database = config.database
-    if (config.secret) {
-      if (config.secret.hash) this.secret.hash = config.secret.hash
+  constructor(dbConfig: Database) {
+    this.database = dbConfig.database
+    if (dbConfig.secret) {
+      if (dbConfig.secret.hash) this.secret.hash = dbConfig.secret.hash
+    }
+  }
+
+  private getClient(configs: PgClientConfig[], dbname?: string) {
+    if (configs.length === 0) {
+      throw new Error('No Connection')
+    }
+    let currentClientConfig: PgClientConfig
+    if (dbname) {
+      currentClientConfig = this.getCurrentClient(configs, dbname)
+    } else {
+      currentClientConfig = this.getDefaultClient(configs)
+    }
+    return pgp(currentClientConfig)
+  }
+
+  private getCurrentClient(configs: PgClientConfig[], dbname: string) {
+    const index = findIndex(configs, ['database', dbname])
+    if (index === -1) {
+      console.log(`Client config [${dbname}] does not exist.`)
+      return this.getDefaultClient(configs)
+    } else {
+      console.log(`Set client config [${dbname}].`)
+      return configs[index]
+    }
+  }
+
+  private getDefaultClient(configs: PgClientConfig[]) {
+    const index = findIndex(configs, ['default', true])
+    if (index === -1) {
+      console.log('No default client config. Use first client config as default')
+      return configs[0]
+    }
+    else {
+      console.log('Use default client config')
+      return configs[index]
     }
   }
 
   public query = async (...args: any[]) => {
-    const config = new QueryConfig(...args)
-    const dbname = config.name
-    if (this.database.postgres.length === 0) {
-      throw new Error('No Connection')
-    }
-    let connection: PgConnection | null = null
-    for (const item of this.database.postgres) {
-      if (item.database === dbname) {
-        connection = new PgConnection(item)
-        break
-      }
-    }
-    if (!connection) {
-      console.error(`Connection[${dbname}] does not exist.`)
-      for (const item of this.database.postgres) {
-        if (item.default === true) {
-          console.log('Use default connection.')
-          connection = new PgConnection(item)
-          break
-        }
-      }
-    }
-    if (!connection) {
-      console.error(`Default connection does not exit, use first connection as default.`)
-      connection = new PgConnection(this.database.postgres[0])
-    }
-    const client = new PgClient(connection)
+    const queryConfig = new PgQueryConfig(...args)
+    const client = this.getClient(this.database.postgres, queryConfig.name)
     try {
-      console.log(client.query(config))
-      const res = client.query(config).then((res) => res)
-      console.log('res: ', res)
+      const res = await client.query(queryConfig)
       return res
     } catch (error) {
       throw error
     } finally {
-      console.log('end')
-      client.end()
+      client.$pool.end()
     }
   }
 
   public transaction = async (actions: Function, dbname?: string) => {
-    if (this.database.postgres.length === 0) {
-      throw new Error('No Connection')
-    }
-    let connection: PgConnection | null = null
-    if (dbname && dbname) {
-      for (const item of this.database.postgres) {
-        if (item.database === dbname) {
-          connection = new PgConnection(item)
-          break
-        }
-      }
-      if (!connection) {
-        console.error(`Connection[${dbname}] does not exist.`)
-        for (const item of this.database.postgres) {
-          if (item.default === true) {
-            console.log('Use default connection.')
-            connection = new PgConnection(item)
-            break
-          }
-        }
-      }
-    }
-    if (!connection) {
-      console.error('Defaut connection does not exist, use first connection as default.')
-      connection = new PgConnection(this.database.postgres[0])
-    }
-    const client = new PgClient(connection)
+    const client = this.getClient(this.database.postgres, dbname)
     try {
       await client.query('BEGIN')
       const res = await actions(client)
@@ -121,7 +100,7 @@ export class Database {
       await client.query('ROLLBACK')
       throw error
     } finally {
-      client.end()
+      client.$pool.end()
     }
   }
 }

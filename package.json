@@ -11,8 +11,8 @@
     "bluebird": "^3.5.3",
     "del": "^3.0.0",
     "log4js": "^3.0.6",
-    "pg": "^7.7.1",
-    "pg-then": "^1.2.1"
+    "pg-promise": "^8.5.4",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.25",
@@ -21,12 +21,14 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/decamelize": "^1.2.0",
     "@types/del": "^3.0.1",
+    "@types/lodash": "^4.14.119",
     "@types/mocha": "^5.2.5",
     "@types/pg": "^7.4.11",
     "camelcase": "^5.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "decamelize": "^2.0.0",
+    "lodash": "^4.17.11",
     "mocha": "^5.2.0",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.2"

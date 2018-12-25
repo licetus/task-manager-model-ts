@@ -1,30 +1,30 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { PgConnection } from './connections'
+import { PgClientConfig } from './classes'
 import { db, Database } from '../db'
 
 interface ManagerConfig {
-  connections: PgConnection[]
+  connections: PgClientConfig[]
   version?: string | number
 }
 
 export class PgManager {
-  private connections: PgConnection[]
+  private connections: PgClientConfig[]
   public version?: string | number
-  private defaultConnection: PgConnection | null = null
+  private defaultConnection: PgClientConfig | null = null
   constructor(config: ManagerConfig) {
     this.connections = config.connections
     this.version = config.version
     for (const item of this.connections) {
       if (item.default === true) {
-        this.defaultConnection = new PgConnection(item)
+        this.defaultConnection = new PgClientConfig(item)
         break
       }
     }
     if (!this.defaultConnection) this.defaultConnection = config.connections[0]
   }
   async dropDbIfExists() {
-    const dbname = (this.defaultConnection as PgConnection).database 
+    const dbname = (this.defaultConnection as PgClientConfig).database 
     const queryTerminate = `
 			SELECT pg_terminate_backend(pg_stat_activity.pid)
 			FROM pg_stat_activity
@@ -36,7 +36,7 @@ export class PgManager {
   }
 
   async createDbIfNotExist() {
-    const dbname = (this.defaultConnection as PgConnection).database
+    const dbname = (this.defaultConnection as PgClientConfig).database
     const queryCheck = `
       SELECT 1 AS exists
       FROM pg_database
