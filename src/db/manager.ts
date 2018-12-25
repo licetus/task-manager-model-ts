@@ -11,39 +11,32 @@ interface ManagerConfig {
 export class PgManager {
   private connections: PgClientConfig[]
   public version?: string | number
-  private defaultConnection: PgClientConfig | null = null
   constructor(config: ManagerConfig) {
     this.connections = config.connections
     this.version = config.version
-    for (const item of this.connections) {
-      if (item.default === true) {
-        this.defaultConnection = new PgClientConfig(item)
-        break
-      }
-    }
-    if (!this.defaultConnection) this.defaultConnection = config.connections[0]
   }
   async dropDbIfExists() {
-    const dbname = (this.defaultConnection as PgClientConfig).database 
+    const dbname = db.getLocalDatabase()
     const queryTerminate = `
 			SELECT pg_terminate_backend(pg_stat_activity.pid)
 			FROM pg_stat_activity
 			WHERE pg_stat_activity.datname = $1
 			;`
     await db.query('postgres', queryTerminate, [dbname])
-    const queryDrop = `DROP DATABASE IF EXIST "${dbname}";`
+    const queryDrop = `DROP DATABASE IF EXISTS "${dbname}";`
     await db.query('postgres', queryDrop)
   }
 
   async createDbIfNotExist() {
-    const dbname = (this.defaultConnection as PgClientConfig).database
+    const dbname = db.getLocalDatabase()
     const queryCheck = `
       SELECT 1 AS exists
       FROM pg_database
       WHERE datname = $1
     `
     const res = await db.query('postgres', queryCheck, [dbname])
-    if (res.rowCount === 0) {
+    console.log('Res: ', res)
+    if (res.length === 0) {
       const queryCreate = `CREATE DATABASE "${dbname}"`
       await db.query('postgres', queryCreate)
     }
@@ -54,12 +47,12 @@ export class PgManager {
       SELECT 1 AS exists FROM pg_class WHERE relname = 'version'
     `
     const resCheck = await db.query(queryCheck)
-    if (resCheck.rowCount === 0) {
+    if (resCheck.length === 0) {
       return -1
     }
     const queryGetVersion = 'SELECT ver FROM version ORDER BY ver DESC LIMIT 1;'
     const resVersion = await db.query(queryGetVersion)
-    if (resVersion.rowCount === 0) {
+    if (resVersion.length === 0) {
       return -1
     }
     const currentVer = resVersion.rows[0].ver

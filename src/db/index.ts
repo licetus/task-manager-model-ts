@@ -4,17 +4,17 @@ import { PgClientConfig, PgQueryConfig } from './classes'
 import * as config from '../../test/config/config.json'
 import { QueryConfig } from 'pg';
 import { disconnect } from 'cluster';
+import { SSL_OP_TLS_BLOCK_PADDING_BUG } from 'constants';
 
-// const config = require('../../test/config/config.json')
 const pgp = pgPromise({
   connect(client) {
-    console.log(`Connect to database [${client.database}]`)
+    console.log(`----- Connect to database [${client.database}]`)
   },
   disconnect(client) {
-    console.log(`Disconnect database [${client.database}]`)
+    console.log(`----- Disconnect database [${client.database}]\n`)
   },
   query(e) {
-    console.log('Query: ', e.query)
+    console.log('----- Query: ', e.query)
   },
   transact(e) {
     if (e.ctx.finish) {
@@ -33,47 +33,43 @@ const pgp = pgPromise({
 export class Database {
   readonly database: { postgres: PgClientConfig[] }
   readonly secret: any = { hash: '' }
+  private localClientConfig: PgClientConfig
+
   constructor(dbConfig: Database) {
     this.database = dbConfig.database
     if (dbConfig.secret) {
       if (dbConfig.secret.hash) this.secret.hash = dbConfig.secret.hash
     }
+    this.localClientConfig = this.getDefaultClientConfig(dbConfig.database.postgres)
   }
 
-  private getClient(configs: PgClientConfig[], dbname?: string) {
+  private getDefaultClientConfig(configs: PgClientConfig[]) {
     if (configs.length === 0) {
       throw new Error('No Connection')
     }
-    let currentClientConfig: PgClientConfig
-    if (dbname) {
-      currentClientConfig = this.getCurrentClient(configs, dbname)
-    } else {
-      currentClientConfig = this.getDefaultClient(configs)
-    }
-    return pgp(currentClientConfig)
-  }
-
-  private getCurrentClient(configs: PgClientConfig[], dbname: string) {
-    const index = findIndex(configs, ['database', dbname])
-    if (index === -1) {
-      console.log(`Client config [${dbname}] does not exist.`)
-      return this.getDefaultClient(configs)
-    } else {
-      console.log(`Set client config [${dbname}].`)
-      return configs[index]
-    }
-  }
-
-  private getDefaultClient(configs: PgClientConfig[]) {
     const index = findIndex(configs, ['default', true])
     if (index === -1) {
-      console.log('No default client config. Use first client config as default')
+      console.log(`No default client config. Set first client config [${configs[0].database}] as default`)
       return configs[0]
     }
     else {
-      console.log('Use default client config')
+      console.log(`Set default client config [${configs[index].database}]`)
       return configs[index]
     }
+  }
+
+  private getClient(configs: PgClientConfig[], dbname?: string) {
+    if (dbname) {
+      const index = findIndex(configs, ['database', dbname])
+      if (index !== -1) {
+        return pgp(configs[index])
+      }
+    }
+    return pgp(this.localClientConfig)
+  }
+
+  public getLocalDatabase() {
+    return this.localClientConfig.database
   }
 
   public query = async (...args: any[]) => {
@@ -81,6 +77,7 @@ export class Database {
     const client = this.getClient(this.database.postgres, queryConfig.name)
     try {
       const res = await client.query(queryConfig)
+      console.log(res)
       return res
     } catch (error) {
       throw error

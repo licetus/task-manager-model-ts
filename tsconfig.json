@@ -13,7 +13,7 @@
     "downlevelIteration": true,
     "sourceMap": true,
     "baseUrl": "./",
-    "outDir": "./dist",
+    "outDir": "./build",
     "types": [
       "mocha",
       "chai"
@@ -29,11 +29,9 @@
     ]
   },
   "include": [
-    "bin/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "test/**/*.ts",
-    "test/**/*.tsx"
+    "src",
+    "bin",
+    "test"
   ],
   "exclude": [
     "node_modules"
