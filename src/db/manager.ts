@@ -1,54 +1,59 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { PgClientConfig } from './classes'
-import { db, Database } from '../db'
+import { Database, DatabaseConfig } from '../db'
 
-interface ManagerConfig {
-  connections: PgClientConfig[]
+interface PgManagerConfig {
+  pgConfig: DatabaseConfig
   version?: string | number
 }
 
 export class PgManager {
   public version?: string | number
-  constructor(config: ManagerConfig) {
-    this.version = config.version
+  private pgConfig: DatabaseConfig
+  private db: Database
+  constructor(config: PgManagerConfig) {
+    if (config && config.version) {
+      this.version = config.version
+    }
+    this.pgConfig = config.pgConfig
+    this.db = new Database(config.pgConfig)
   }
-  async dropDbIfExists() {
-    const dbname = db.getLocalDatabase()
+  private async dropDbIfExists() {
+    const dbname = this.db.getLocalDatabase()
     const queryTerminate = `
 			SELECT pg_terminate_backend(pg_stat_activity.pid)
 			FROM pg_stat_activity
 			WHERE pg_stat_activity.datname = $1
 			;`
-    await db.query('postgres', queryTerminate, [dbname])
+    await this.db.query('postgres', queryTerminate, [dbname])
     const queryDrop = `DROP DATABASE IF EXISTS "${dbname}";`
-    await db.query('postgres', queryDrop)
+    await this.db.query('postgres', queryDrop)
   }
 
-  async createDbIfNotExist() {
-    const dbname = db.getLocalDatabase()
+  private async createDbIfNotExist() {
+    const dbname = this.db.getLocalDatabase()
     const queryCheck = `
       SELECT 1 AS exists
       FROM pg_database
       WHERE datname = $1
     `
-    const res = await db.query('postgres', queryCheck, [dbname])
+    const res = await this.db.query('postgres', queryCheck, [dbname])
     if (res.length === 0) {
       const queryCreate = `CREATE DATABASE "${dbname}"`
-      await db.query('postgres', queryCreate)
+      await this.db.query('postgres', queryCreate)
     }
   }
 
-  async getCurrentVersion() {
+  private async getCurrentVersion() {
     const queryCheck = `
       SELECT 1 AS exists FROM pg_class WHERE relname = 'version'
     `
-    const resCheck = await db.query(queryCheck)
+    const resCheck = await this.db.query(queryCheck)
     if (resCheck.length === 0) {
       return -1
     }
     const queryGetVersion = 'SELECT ver FROM version ORDER BY ver DESC LIMIT 1;'
-    const resVersion = await db.query(queryGetVersion)
+    const resVersion = await this.db.query(queryGetVersion)
     if (resVersion.length === 0) {
       return -1
     }
@@ -57,7 +62,7 @@ export class PgManager {
     return currentVer
   }
 
-  async getPatchFolders() {
+  private async getPatchFolders() {
     const patchMainPath = path.join(__dirname, 'patches')
     const currentVer = await this.getCurrentVersion()
     const clusters = fs.readdirSync(patchMainPath)
@@ -87,10 +92,11 @@ export class PgManager {
     this.version = patchVer
   }
 
-  async update() {
+  public async update() {
     await this.createDbIfNotExist()
     const patchFolders = await this.getPatchFolders()
-    await db.transaction(async (client: Database) => {
+    await this.db.transaction(async () => {
+      const client = new Database(this.pgConfig)
       for (const patchFolder of patchFolders) {
         const patchVer = patchFolder[0] as number
         const patchPath = patchFolder[1] as string
@@ -112,7 +118,7 @@ export class PgManager {
     })
   }
 
-  async rebuild() {
+  public async rebuild() {
     await this.dropDbIfExists()
     await this.update()
   }

@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "build": "",
-    "initdb": "ts-node bin/init.ts"
+    "initdb": "ts-node bin/init.ts",
+    "test": "_mocha -r ts-node/register ./test/*.spec.ts"
   },
   "dependencies": {
     "bluebird": "^3.5.3",

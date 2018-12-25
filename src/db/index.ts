@@ -17,13 +17,17 @@ const pgp = pgPromise({
   // },
 })
 
-export class Database {
+export interface DatabaseConfig {
+  database: { postgres: PgClientConfig[] }
+  secret?: any
+}
 
+export class Database {
   readonly database: { postgres: PgClientConfig[] }
-  readonly secret: any = { hash: '' }
+  readonly secret?: any = { hash: '' }
   private localClientConfig: PgClientConfig
 
-  constructor(dbConfig: Database) {
+  constructor(dbConfig: DatabaseConfig) {
     this.database = dbConfig.database
     if (dbConfig.secret) {
       if (dbConfig.secret.hash) this.secret.hash = dbConfig.secret.hash
@@ -87,5 +91,3 @@ export class Database {
     }
   }
 }
-
-export const db = new Database(config as Database)
