@@ -9,10 +9,8 @@ interface ManagerConfig {
 }
 
 export class PgManager {
-  private connections: PgClientConfig[]
   public version?: string | number
   constructor(config: ManagerConfig) {
-    this.connections = config.connections
     this.version = config.version
   }
   async dropDbIfExists() {
@@ -54,7 +52,7 @@ export class PgManager {
     if (resVersion.length === 0) {
       return -1
     }
-    const currentVer = resVersion.rows[0].ver
+    const currentVer = resVersion[0].ver
     this.version = currentVer
     return currentVer
   }
@@ -78,14 +76,13 @@ export class PgManager {
     patchFolders.sort((a: any[], b: any[]) => {
       return a[0] - b[0]
     })
-    console.log('patch', patchFolders)
     return patchFolders
   }
 
   async updateVersion(client: Database, patchVer: any) {
     const currentVer = await this.getCurrentVersion()
     if (patchVer <= currentVer) return
-    const query = 'INSET INTO version (ver) VALUES ($1);'
+    const query = 'INSERT INTO version (ver) VALUES ($1);'
     await client.query(query, [patchVer])
     this.version = patchVer
   }

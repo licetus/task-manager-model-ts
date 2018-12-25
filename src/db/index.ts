@@ -2,35 +2,23 @@ import pgPromise from 'pg-promise'
 import { findIndex } from 'lodash'
 import { PgClientConfig, PgQueryConfig } from './classes'
 import * as config from '../../test/config/config.json'
-import { QueryConfig } from 'pg';
-import { disconnect } from 'cluster';
-import { SSL_OP_TLS_BLOCK_PADDING_BUG } from 'constants';
 
 const pgp = pgPromise({
-  connect(client) {
-    console.log(`----- Connect to database [${client.database}]`)
-  },
-  disconnect(client) {
-    console.log(`----- Disconnect database [${client.database}]\n`)
-  },
-  query(e) {
-    console.log('----- Query: ', e.query)
-  },
-  transact(e) {
-    if (e.ctx.finish) {
-      console.log('Duration: ', e.ctx.duration)
-      if (e.ctx.success) {
-        // e.ctx.result = resolved data
-      } else {
-        // e.ctx.result = error/rejection reason
-      }
-    } else {
-      console.log('Start Time:', e.ctx.start)
-    }
-  }
+  // connect(client) {
+  //   console.log(`----- Connect to database [${client.database}]`)
+  // },
+  // disconnect(client) {
+  //   console.log(`----- Disconnect database [${client.database}]\n`)
+  // },
+  // query(e) {
+  //   let query = e.query.text
+  //   if (query.length > 50) query = '\n......\n......[query content]\n......'
+  //   console.log('----- Query: ', query)
+  // },
 })
 
 export class Database {
+
   readonly database: { postgres: PgClientConfig[] }
   readonly secret: any = { hash: '' }
   private localClientConfig: PgClientConfig
@@ -53,7 +41,7 @@ export class Database {
       return configs[0]
     }
     else {
-      console.log(`Set default client config [${configs[index].database}]`)
+      // console.log(`Set default client config [${configs[index].database}]`)
       return configs[index]
     }
   }
@@ -86,7 +74,7 @@ export class Database {
   }
 
   public transaction = async (actions: Function, dbname?: string) => {
-    const client = this.getClient(this.database.postgres, dbname)
+    const client = new Database(config as Database)
     try {
       await client.query('BEGIN')
       const res = await actions(client)
@@ -96,12 +84,8 @@ export class Database {
       await client.query('ROLLBACK')
       throw error
     } finally {
-      client.$pool.end()
     }
   }
 }
 
 export const db = new Database(config as Database)
-
-
-
