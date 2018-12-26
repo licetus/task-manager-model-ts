@@ -1,0 +1,12 @@
+{
+  "ValidationFailed": "数据校验失败",
+  "AccountOrPasswordInvalid": "用户名或密码不正确",
+  "InvalidId": "id不存在",
+  "DBCreateFailed": "创建数据失败",
+  "DBUpdateFailed": "更新数据失败",
+  "DBDeleteFailed": "删除数据失败",
+  "DBGetFailed": "获取数据失败",
+  "InvalidUserId": "登陆失败，账户名或密码错误",
+  "CheckVerifyCodeFailed": "校验验证码失败",
+  "InvalidVerifyCode": "验证码已失效，请重新获取"
+}

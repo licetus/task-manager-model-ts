@@ -9,10 +9,10 @@
     "test": "_mocha -r ts-node/register ./test/*.spec.ts"
   },
   "dependencies": {
+    "@restify-ts/errors": "^1.0.0-beta.1",
     "bluebird": "^3.5.3",
     "log4js": "^3.0.6",
     "pg-promise": "^8.5.4",
-    "restify-errors": "^6.1.1",
     "tslib": "^1.9.3"
   },
   "devDependencies": {
@@ -26,7 +26,6 @@
     "@types/mocha": "^5.2.5",
     "@types/ncp": "^2.0.1",
     "@types/pg": "^7.4.11",
-    "@types/restify-errors": "^4.3.3",
     "camelcase": "^5.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",

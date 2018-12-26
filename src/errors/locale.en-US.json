@@ -1,0 +1,9 @@
+{
+  "ValidationFailed": "Validation failed.",
+  "AccountOrPasswordInvalid": "Invalid account or password.",
+  "InvalidId": "This id does not exist in system.",
+  "DBCreateFailed": "Create object failed.",
+  "DBUpdateFailed": "Update object failed.",
+  "DBDeleteFailed": "Delete object failed.",
+  "DBGetFailed": "Get object information failed."
+}
