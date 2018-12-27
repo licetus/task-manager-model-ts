@@ -12,7 +12,7 @@ const log = log4js.getLogger()
 
 export const db = new Database()
 
-export const checkObjeck = (obj: any, data: any) => {
+export const checkObject = (obj: any, data: any) => {
   Object.keys(data).forEach((key) => {
     if (key !== 'id' && data[key]) obj[key].should.equal(data[key])
   })

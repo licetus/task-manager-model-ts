@@ -1,9 +1,10 @@
 import decamelize from 'decamelize'
+import { ListParams } from '../models/base'
 
-export const sqlizeListParams = (primaryKey: string, params: any, isSum = false) => {
+export const sqlizeListParams = (pkey: string, params?: ListParams, isSum = false) => {
   if (!params) return ''
-  const pKey = decamelize(primaryKey)
-  const filters = []
+  const pKey = decamelize(pkey)
+  const arr = []
   let orderBy = ''
   let limit = ''
   if (!isSum) {
@@ -15,7 +16,7 @@ export const sqlizeListParams = (primaryKey: string, params: any, isSum = false)
       orderBy = `ORDER BY ${pKey} DESC`
       const pageSize = params.pageSize || 10
       limit = `LIMIT ${pageSize}`
-      filters.push(`${pKey} < ${params.next}`)
+      arr.push(`${pKey} < ${params.next}`)
     } else if (params.pageSize) {
       limit = `LIMIT ${params.pageSize}`
     }
@@ -25,10 +26,10 @@ export const sqlizeListParams = (primaryKey: string, params: any, isSum = false)
       const strings = filter.split((/=|LIKE|>|<|>=|<=|@>|<@|<>/))
       const key = strings[0]
       const f = `${decamelize(key)}${filter.substr(key.length, filter.length - key.length)}`
-      filters.push(f)
+      arr.push(f)
     })
   }
-  const filterString = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const filterString = arr.length > 0 ? `WHERE ${arr.join(' AND ')}` : ''
   const ret = ` ${filterString} ${orderBy} ${limit}`
   return ret
 }

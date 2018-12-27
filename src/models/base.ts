@@ -6,6 +6,14 @@ import { Database } from '../db'
 
 const db = new Database()
 
+export interface ListParams {
+  page?: number
+  pageSize?: number
+  next?: number
+  orderBy?: string
+  filters?: string[]
+}
+
 interface DataConfig {
   independentId?: boolean
   returnCreateTime?: boolean
@@ -14,37 +22,49 @@ interface DataConfig {
   props?: any
 }
 
-export class DataModel {
-  private schema: string
-  private table: string
-  private independentId: boolean = true
-  private returnCreateTime: boolean = true
-  private returnLastUpdateTime: boolean = true
-  private pkey: string = 'id'
-  private props: any = {}
+export abstract class DataModel {
+  private schemaName: string
+  private tableName: string
+  protected independentId: boolean = true
+  protected returnCreateTime: boolean = true
+  protected returnLastUpdateTime: boolean = true
+  protected pkey: string = 'id'
 
-  constructor(schema: string, table: string, config?: DataConfig) {
-    this.schema = schema
-    this.table = table
+  abstract props: any = {}
+
+  constructor(schemaName: string, tableName: string, config?: DataConfig) {
+    this.schemaName = schemaName
+    this.tableName = tableName
     if (config && config.independentId) this.independentId = config.independentId
     if (config && config.returnCreateTime) this.returnCreateTime = config.returnCreateTime
     if (config && config.returnLastUpdateTime) this.returnLastUpdateTime = config.returnLastUpdateTime
     if (config && config.pkey) this.pkey = config.pkey
-    if (config && config.props) this.props = config.props
   }
 
   private setPkeyValue(val: number) {
     this.props[this.pkey] = val
   }
 
-  public async isExist(pkey: string) {
-    const query = `SELECT * FROM "${this.schema}".${this.table} WHERE ${this.pkey} = $1;`
-    const res = await db.query(query, [pkey])
+  abstract getShema(): string[]
+  
+  private generateResult(data: any) {
+    const res = {} as any
+    this.getShema().forEach((key) => {
+      res[key] = data[decamelize(key)]
+    })
+    if (this.returnCreateTime) res.createTime = data.create_time
+    if (this.returnLastUpdateTime) res.lastUpdateTime = data.last_update_time
+    return res
+  }
+
+  public async isExist(pkeyValue: number) {
+    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
+    const res = await db.query(query, [pkeyValue])
     return res.length > 0
   }
 
-  public async isExistByKey(key: string, value: string) {
-    const query = `SELECT * FROM "${this.schema}".${this.table} WHERE ${decamelize(key)} = $1;`
+  public async isExistByKey(key: string, value: string | number) {
+    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${decamelize(key)} = $1;`
     const res = await db.query(query, [value])
     return res.length > 0
   }
@@ -57,7 +77,7 @@ export class DataModel {
     const propIndex = Object.keys(this.props).map((prop, index) => `$${index + 1}`).join(',')
     const propValues = Object.values(this.props)
     const query = `
-			INSERT INTO "${this.schema}".${this.table} (
+			INSERT INTO "${this.schemaName}".${this.tableName} (
 				${propKeys}
 			) VALUES (
 				${propIndex}
@@ -75,11 +95,99 @@ export class DataModel {
     const keyIndexStr = propAssigns.join(',')
     const propValues = Object.values(this.props)
     const query = `
-			UPDATE "${this.schema}".${this.table}
+			UPDATE "${this.schemaName}".${this.tableName}
 			SET ${keyIndexStr}
 			WHERE ${this.pkey} = $1
 		;`
     const res = await db.query(query, propValues)
     if (res.length <= 0) throw new Error // TODO: errorhandler
+  }
+
+  public async get(pkeyValue: number) {
+    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
+    const res = await db.query(query, [pkeyValue])
+    if (res.length <= 0) throw new Error // TODO: errorhandler
+    return this.generateResult(res)
+  }
+
+  public async getByKey(key: string, value: string | number) {
+    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${key} = $1;`
+    const res = await db.query(query, [value])
+    if (res.length <= 0) throw new Error // TODO: errorhandler
+    return this.generateResult(res)
+  }
+
+  public async getList(params?: ListParams) {
+    const paramsString = sqlizeListParams(this.pkey, params)
+    const query = `SELECT * from "${this.schemaName}".${this.tableName} ${paramsString};`
+    const res: any[] = await db.query(query)
+    return res.map((item) => {
+      return this.generateResult(item)
+    })
+  }
+
+  public async getViewList(viewName: string, pkey: string, params: ListParams) {
+    const paramsString = sqlizeListParams(pkey, params)
+    const query = `SELECT * from "${this.schemaName}".${viewName} ${paramsString};`
+    const res: any[] = await db.query(query)
+    return res.map((item) => {
+      return this.generateResult(item)
+    })
+  }
+
+  public async getViewListCount(viewName: string, pkey: string, params: ListParams) {
+    const paramsString = sqlizeListParams(pkey, params, true)
+    const query = `SELECT COUNT(*) as total from "${this.schemaName}".${viewName} ${paramsString};`
+    const res = await db.query(query)
+    return res.total
+  }
+
+  public async getListCount(params: ListParams) {
+    const res = await this.getViewListCount(this.tableName, this.pkey, params)
+    return res
+  }
+
+  public async save() {
+    try {
+      if (this.props[this.pkey]) {
+        const isExist = await this.isExist(this.props[this.pkey])
+        if (!isExist) {
+          await this.create()
+        } else {
+          const object = await this.get(this.props[this.pkey])
+          this.getShema().forEach((key) => {
+            if (key !== this.pkey) {
+              if (!this.props[key]) this.props[key] = object[key]
+            }
+          })
+          await this.update()
+        }
+      } else {
+        await this.create()
+      }
+    } catch (err) {
+      throw err
+    }
+    return cloneDeep(this)
+  }
+
+  public async delete(pkeyValue: number) {
+    try {
+      let isExist = await this.isExist(pkeyValue)
+      if (!isExist) {
+        throw new Error // TODO: errorhandler
+      } else {
+        const query = `DELETE FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
+        await db.query(query, [pkeyValue])
+        isExist = await this.isExist(pkeyValue)
+        if (isExist) throw new Error // TODO: errorhandler
+      }
+    } catch (err) {
+      throw err
+    }
+  }
+
+  static async transaction(actions: any) {
+    await db.transaction(actions)
   }
 }
