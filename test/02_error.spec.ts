@@ -23,6 +23,9 @@ describe('* Error =======================', () => {
       case 'en-US':
         e.message.should.equal('This is a test error.')
     }
-    throw e
+    const f = function() {
+      throw e
+    }
+    f.should.Throw()
   })
 })

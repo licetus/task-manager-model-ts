@@ -1,10 +1,5 @@
 const e: any = require('restify-errors')
 
-enum locales {
-  'zh-cn',
-  'en-US',
-}
-
 const normalize = (name: string) => {
   if (!name.endsWith('Error')) {
     return `${name}Error`

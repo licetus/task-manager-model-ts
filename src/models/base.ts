@@ -1,9 +1,18 @@
-import { snakeCase } from 'lodash'
-import { cloneDeep } from 'lodash'
+import { snakeCase, cloneDeep } from 'lodash'
 import { sqlizeListParams } from '../utils'
 import { Database } from '../db'
+import error from '../errors'
 
 const db = new Database()
+
+const ERRORS = {
+  InvalidId: 400,
+  DatabaseCreateFailed: 400,
+  DatabaseUpdateFailed: 400,
+  DatabaseDeleteFailed: 400,
+  DatabaseFetchFailed: 400,
+}
+error.register(ERRORS)
 
 export interface ListParams {
   page?: number
@@ -83,7 +92,7 @@ export abstract class DataModel {
       ) RETURNING ${this.pkey}
     ;`
     const res = await db.query(query, propValues)
-    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    if (res.rowCount <= 0) throw new error.DatabaseCreateFailedError()
     this.setPkeyValue(res.rows[0][this.pkey])
   }
 
@@ -99,20 +108,20 @@ export abstract class DataModel {
       WHERE ${this.pkey} = $1
     ;`
     const res = await db.query(query, propValues)
-    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    if (res.rowCount <= 0) throw new error.DatabaseUpdateFailedError()
   }
 
   public async get(pkeyValue: number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
     const res = await db.query(query, [pkeyValue])
-    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    if (res.rowCount <= 0) throw new error.DatabaseFetchFailedError()
     return this.generateResult(res.rows[0])
   }
 
   public async getByKey(key: string, value: string | number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${key} = $1;`
     const res = await db.query(query, [value])
-    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    if (res.rowCount <= 0) throw new error.DatabaseFetchFailedError()
     return this.generateResult(res.rows[0])
   }
 
@@ -174,12 +183,12 @@ export abstract class DataModel {
     try {
       let isExist = await this.isExist(pkeyValue)
       if (!isExist) {
-        throw new Error // TODO: errorhandler
+        throw new error.InvalidIdError()
       } else {
         const query = `DELETE FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
         await db.query(query, [pkeyValue])
         isExist = await this.isExist(pkeyValue)
-        if (isExist) throw new Error // TODO: errorhandler
+        if (isExist) throw new error.DatabaseDeleteFailedError()
       }
     } catch (err) {
       throw err

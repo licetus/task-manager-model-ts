@@ -3,8 +3,8 @@
   "ValidationFailed": "Validation failed.",
   "AccountOrPasswordInvalid": "Invalid account or password.",
   "InvalidId": "This id does not exist in system.",
-  "DBCreateFailed": "Create object failed.",
-  "DBUpdateFailed": "Update object failed.",
-  "DBDeleteFailed": "Delete object failed.",
-  "DBGetFailed": "Get object information failed."
+  "DatabaseCreateFailed": "Create object failed.",
+  "DatabaseUpdateFailed": "Update object failed.",
+  "DatabaseDeleteFailed": "Delete object failed.",
+  "DatabaseFetchFailed": "Fetch object failed."
 }
