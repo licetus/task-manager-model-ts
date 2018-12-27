@@ -1,4 +1,5 @@
 {
+  "Test": "这是一个测试用异常",
   "ValidationFailed": "数据校验失败",
   "AccountOrPasswordInvalid": "用户名或密码不正确",
   "InvalidId": "id不存在",
