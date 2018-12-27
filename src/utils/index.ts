@@ -1,14 +1,25 @@
-import decamelize from 'decamelize'
+import { snakeCase } from 'lodash'
 import { ListParams } from '../models/base'
 
-export const sqlizeListParams = (pkey: string, params?: ListParams, isSum = false) => {
+export const sqlizeListParams = (primaryKey: string, params?: ListParams, isSum = false) => {
   if (!params) return ''
-  const pKey = decamelize(pkey)
-  const arr = []
+  const pKey = snakeCase(primaryKey)
+  const arr: string[] = []
+  const values: (string | number)[] = []
   let orderBy = ''
   let limit = ''
   if (!isSum) {
-    orderBy = params.orderBy ? `ORDER BY ${decamelize(params.orderBy)}` : `ORDER BY ${pKey} DESC`
+    if (params.orderBy) {
+      const index = params.orderBy.indexOf(' desc')
+      if (index > 0) {
+        const key = params.orderBy.substring(0, index)
+        orderBy = `ORDER BY ${snakeCase(key)} DESC`
+      } else {
+        orderBy = `ORDER BY ${snakeCase(params.orderBy)}`
+      }
+    } else {
+      orderBy = `ORDER BY ${pKey} DESC`
+    }
     if (params.page || params.page === 0) {
       const pageSize = params.pageSize || 10
       limit = `LIMIT ${pageSize} OFFSET ${params.page * pageSize}`
@@ -22,14 +33,15 @@ export const sqlizeListParams = (pkey: string, params?: ListParams, isSum = fals
     }
   }
   if (params.filters && params.filters.length > 0) {
-    params.filters.forEach((filter: string) => {
-      const strings = filter.split((/=|LIKE|>|<|>=|<=|@>|<@|<>/))
-      const key = strings[0]
-      const f = `${decamelize(key)}${filter.substr(key.length, filter.length - key.length)}`
+    params.filters.forEach((item: string, index) => { 
+      const split = item.split(/=|LIKE|>|<|>=|<=|<>|@>|<@1/)
+      const key = split[0]
+      const rest = item.substr(key.length)
+      const f = `${snakeCase(key)} ${rest}`
       arr.push(f)
     })
   }
   const filterString = arr.length > 0 ? `WHERE ${arr.join(' AND ')}` : ''
-  const ret = ` ${filterString} ${orderBy} ${limit}`
-  return ret
+  const string = ` ${filterString} ${orderBy} ${limit}`
+  return string
 }

@@ -37,10 +37,11 @@ describe('* Test data ============================', () => {
 describe('* Test generate list params =============', () => {
   it('Check filter', () => {
     const params = {
-      filters: ['wow LIKE \'%TEMP%\'', 'userId=1', 'userId>=3', 'users@>array[1]'],
+      filters: [`wow LIKE '%TEMP%'`, 'userId >= 1', `userName = 'Lily'`, 'users @> array[1]'],
     }
-    const str = sqlizeListParams('id', params)
-    str.should.equal(' WHERE wow LIKE \'%TEMP%\' AND user_id=1 AND user_id>=3 AND users@>array[1] ORDER BY id DESC ')
+    const string = sqlizeListParams('id', params)
+    const answer = ['%TEMP%', 1, 'Lily']
+    string.should.equal(` WHERE wow LIKE '%TEMP%' AND user_id >= 1 AND user_name = 'Lily' AND users @> array[1] ORDER BY id DESC `)
   })
 
   it('Check count', () => {
@@ -58,7 +59,7 @@ describe('* Test generate list params =============', () => {
       pageSize: 10,
       orderBy: 'id desc',
     }
-    const str = sqlizeListParams('id', params)
-    str.should.equal('  ORDER BY id desc LIMIT 10')
+    const string = sqlizeListParams('id', params)
+    string.should.equal('  ORDER BY id DESC LIMIT 10')
   })
 })

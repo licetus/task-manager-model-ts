@@ -1,5 +1,4 @@
-import camelcase from 'camelcase'
-import decamelize from 'decamelize'
+import { snakeCase } from 'lodash'
 import { cloneDeep } from 'lodash'
 import { sqlizeListParams } from '../utils'
 import { Database } from '../db'
@@ -50,7 +49,7 @@ export abstract class DataModel {
   private generateResult(data: any) {
     const res = {} as any
     this.getShema().forEach((key) => {
-      res[key] = data[decamelize(key)]
+      res[key] = data[snakeCase(key)]
     })
     if (this.returnCreateTime) res.createTime = data.create_time
     if (this.returnLastUpdateTime) res.lastUpdateTime = data.last_update_time
@@ -64,7 +63,7 @@ export abstract class DataModel {
   }
 
   public async isExistByKey(key: string, value: string | number) {
-    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${decamelize(key)} = $1;`
+    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${snakeCase(key)} = $1;`
     const res = await db.query(query, [value])
     return res.rowCount > 0
   }
@@ -73,7 +72,7 @@ export abstract class DataModel {
     if (this.independentId) {
       if (this.props[this.pkey]) delete this.props[this.pkey]
     }
-    const propKeys = Object.keys(this.props).map((prop) => decamelize(prop)).join(',')
+    const propKeys = Object.keys(this.props).map((prop) => snakeCase(prop)).join(',')
     const propIndex = Object.keys(this.props).map((prop, index) => `$${index + 1}`).join(',')
     const propValues = Object.values(this.props)
     const query = `
@@ -90,7 +89,7 @@ export abstract class DataModel {
 
   public async update() {
     const { pkey } = this
-    const propAssigns = Object.keys(this.props).filter(key => key !== pkey).map((prop, index) => `${decamelize(prop)}=$${index + 2}`)
+    const propAssigns = Object.keys(this.props).filter(key => key !== pkey).map((prop, index) => `${snakeCase(prop)}=$${index + 2}`)
     propAssigns.push('last_update_time = unix_now()')
     const keyIndexStr = propAssigns.join(',')
     const propValues = Object.values(this.props)
