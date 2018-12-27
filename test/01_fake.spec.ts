@@ -21,20 +21,18 @@ describe('* Test data ============================', () => {
       SELECT * FROM "task".task
     `
     const res = await db.query(checkQuery)
-    res.length.should.equal(6)
-    res.forEach((item: any, index: number) => {
-      item.id.should.equal(`20338879906000${index + 1}`)
+    res.rowCount.should.equal(6)
+    res.rows.forEach((item: any, index: number) => {
+      item.id.should.equal(parseInt(`20338879906000${index + 1}`))
       item.is_completed.should.equal(index % 2 === 1 ? true : false)
       item.title.should.equal(`task_0${index + 1}`)
       item.content.should.equal(`test task 0${index + 1}`)
-      item.deadline.should.equal(`151600827000${index + 1}`)
-      item.create_time.should.equal(`151600827001${index + 1}`)
-      item.last_update_time.should.equal(`151600827002${index + 1}`)
+      item.deadline.should.equal(parseInt(`151600827000${index + 1}`))
+      item.create_time.should.equal(parseInt(`151600827001${index + 1}`))
+      item.last_update_time.should.equal(parseInt(`151600827002${index + 1}`))
     })
   })
 })
-
-
 
 describe('* Test generate list params =============', () => {
   it('Check filter', () => {

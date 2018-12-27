@@ -41,12 +41,12 @@ export abstract class DataModel {
     if (config && config.pkey) this.pkey = config.pkey
   }
 
-  private setPkeyValue(val: number) {
+  private setPkeyValue(val: string) {
     this.props[this.pkey] = val
   }
 
   abstract getShema(): string[]
-  
+
   private generateResult(data: any) {
     const res = {} as any
     this.getShema().forEach((key) => {
@@ -60,13 +60,13 @@ export abstract class DataModel {
   public async isExist(pkeyValue: number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
     const res = await db.query(query, [pkeyValue])
-    return res.length > 0
+    return res.rowCount > 0
   }
 
   public async isExistByKey(key: string, value: string | number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${decamelize(key)} = $1;`
     const res = await db.query(query, [value])
-    return res.length > 0
+    return res.rowCount > 0
   }
 
   public async create() {
@@ -77,15 +77,15 @@ export abstract class DataModel {
     const propIndex = Object.keys(this.props).map((prop, index) => `$${index + 1}`).join(',')
     const propValues = Object.values(this.props)
     const query = `
-			INSERT INTO "${this.schemaName}".${this.tableName} (
-				${propKeys}
-			) VALUES (
-				${propIndex}
-			) RETURNING ${this.pkey}
-		;`
+      INSERT INTO "${this.schemaName}".${this.tableName} (
+        ${propKeys}
+      ) VALUES (
+        ${propIndex}
+      ) RETURNING ${this.pkey}
+    ;`
     const res = await db.query(query, propValues)
-    if (res.length <= 0) throw new Error // TODO: errorhandler
-    this.setPkeyValue(res[this.pkey])
+    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    this.setPkeyValue(res.rows[0][this.pkey])
   }
 
   public async update() {
@@ -95,33 +95,33 @@ export abstract class DataModel {
     const keyIndexStr = propAssigns.join(',')
     const propValues = Object.values(this.props)
     const query = `
-			UPDATE "${this.schemaName}".${this.tableName}
-			SET ${keyIndexStr}
-			WHERE ${this.pkey} = $1
-		;`
+      UPDATE "${this.schemaName}".${this.tableName}
+      SET ${keyIndexStr}
+      WHERE ${this.pkey} = $1
+    ;`
     const res = await db.query(query, propValues)
-    if (res.length <= 0) throw new Error // TODO: errorhandler
+    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
   }
 
   public async get(pkeyValue: number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
     const res = await db.query(query, [pkeyValue])
-    if (res.length <= 0) throw new Error // TODO: errorhandler
-    return this.generateResult(res)
+    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    return this.generateResult(res.rows[0])
   }
 
   public async getByKey(key: string, value: string | number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${key} = $1;`
     const res = await db.query(query, [value])
-    if (res.length <= 0) throw new Error // TODO: errorhandler
-    return this.generateResult(res)
+    if (res.rowCount <= 0) throw new Error // TODO: errorhandler
+    return this.generateResult(res.rows[0])
   }
 
   public async getList(params?: ListParams) {
     const paramsString = sqlizeListParams(this.pkey, params)
     const query = `SELECT * from "${this.schemaName}".${this.tableName} ${paramsString};`
-    const res: any[] = await db.query(query)
-    return res.map((item) => {
+    const res = await db.query(query)
+    return res.rows.map((item) => {
       return this.generateResult(item)
     })
   }
@@ -129,8 +129,8 @@ export abstract class DataModel {
   public async getViewList(viewName: string, pkey: string, params: ListParams) {
     const paramsString = sqlizeListParams(pkey, params)
     const query = `SELECT * from "${this.schemaName}".${viewName} ${paramsString};`
-    const res: any[] = await db.query(query)
-    return res.map((item) => {
+    const res = await db.query(query)
+    return res.rows.map((item) => {
       return this.generateResult(item)
     })
   }
@@ -139,7 +139,7 @@ export abstract class DataModel {
     const paramsString = sqlizeListParams(pkey, params, true)
     const query = `SELECT COUNT(*) as total from "${this.schemaName}".${viewName} ${paramsString};`
     const res = await db.query(query)
-    return res.total
+    return res.rows[0].total
   }
 
   public async getListCount(params: ListParams) {

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "engines": {
+    "node": "10.15.0",
+    "npm": "6.4.1"
+  },
   "scripts": {
     "build": "",
     "initdb": "ts-node bin/init.ts",

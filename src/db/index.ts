@@ -4,6 +4,10 @@ import { ClientConfig, QueryConfig } from 'pg'
 import config from '../../test/config/config.json'
 
 const pgp = pgPromise({
+  error(err, e) {
+    console.log(err.toString())
+    console.log('Query: ', e.query.text)
+  },
   // connect(client) {
   //   console.log(`----- Connect to database [${client.database}]`)
   // },
@@ -15,6 +19,14 @@ const pgp = pgPromise({
   //   if (query.length > 50) query = '\n......\n......[query content]\n......'
   //   console.log('----- Query: ', query)
   // },
+})
+// set numeric
+pgp.pg.types.setTypeParser(1700, function (value) {
+  return parseFloat(value)
+})
+// set bigint
+pgp.pg.types.setTypeParser(20, function (value) {
+  return parseInt(value)
 })
 
 class PgClientConfig implements ClientConfig {
@@ -116,7 +128,9 @@ export class Database {
     const queryConfig = new PgQueryConfig(...args)
     const client = this.getClient(this.database.postgres, queryConfig.name)
     try {
-      const res = await client.query(queryConfig)
+      const res = await client.result(queryConfig, null, function (res) {
+        return res
+      })
       return res
     } catch (error) {
       throw error

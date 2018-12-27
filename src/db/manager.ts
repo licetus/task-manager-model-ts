@@ -43,7 +43,7 @@ export class PgManager {
       WHERE datname = $1
     `
     const res = await this.db.query('postgres', queryCheck, [dbname])
-    if (res.length === 0) {
+    if (res.rowCount === 0) {
       const queryCreate = `CREATE DATABASE "${dbname}"`
       await this.db.query('postgres', queryCreate)
     }
@@ -54,15 +54,15 @@ export class PgManager {
       SELECT 1 AS exists FROM pg_class WHERE relname = 'version'
     `
     const resCheck = await this.db.query(queryCheck)
-    if (resCheck.length === 0) {
+    if (resCheck.rowCount === 0) {
       return -1
     }
     const queryGetVersion = 'SELECT ver FROM version ORDER BY ver DESC LIMIT 1;'
     const resVersion = await this.db.query(queryGetVersion)
-    if (resVersion.length === 0) {
+    if (resVersion.rowCount === 0) {
       return -1
     }
-    const currentVer = resVersion[0].ver
+    const currentVer = resVersion.rows[0].ver
     this.version = currentVer
     return currentVer
   }

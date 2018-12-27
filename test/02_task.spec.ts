@@ -6,7 +6,7 @@ const taskDataAdd = { isCompleted: true, title: 'test title', content: 'test con
 const taskDataUpdate = { isCompleted: false, title: 'test title', content: 'test content', deadline: 2147483656 }
 
 describe('* task =======================', () => {
-  let taskId = 0
+  let taskId: number
 
   describe('  task: create/update/fetch/delete', () => {
     it('Create(save)', async () => {
@@ -17,7 +17,9 @@ describe('* task =======================', () => {
       checkObject(object.props, data)
     })
     it('Update', async () => {
-      const data = taskDataUpdate
+      const data = Object.assign({
+        id: taskId
+      }, taskDataUpdate)
       await new Task(data).update()
       const res = await new Task().get(taskId)
       checkObject(res, taskDataUpdate)
