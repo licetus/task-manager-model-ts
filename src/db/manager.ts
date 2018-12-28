@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { db, Database, DatabaseConfig } from '../db'
 
-interface PgManagerConfig {
+export interface PgManagerConfig {
   pgConfig?: DatabaseConfig
   version?: string | number
 }

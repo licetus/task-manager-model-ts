@@ -105,7 +105,7 @@ export class Database {
       return configs[0]
     }
     else {
-      console.log(`Set default client config [${configs[index].database}]`)
+      // console.log(`Set default client config [${configs[index].database}]`)
       return configs[index]
     }
   }
@@ -152,5 +152,4 @@ export class Database {
     }
   }
 }
-console.log(process.env.NODE_ENV)
 export const db = new Database(process.env.NODE_ENV === 'test' ? require('../../test/config/config.json') : null)
