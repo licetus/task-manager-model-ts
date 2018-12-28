@@ -1,10 +1,9 @@
 import { promisify } from 'bluebird'
-import { ncp } from 'ncp'
 import del from 'del'
 
 const copy = async () => {
-  const n = promisify(ncp)
-  await n('src/db/patches', 'dist/patches', {}, () => {})
+  const n: any = promisify(require('ncp').ncp)
+  await n('src/db/patches', 'dist/patches')
   // add models
 }
 

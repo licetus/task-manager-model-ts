@@ -14,26 +14,19 @@
     "noImplicitAny": true,
     "sourceMap": true,
     "baseUrl": "./",
-    "outDir": "./build",
+    "outDir": "./dist",
     "types": [
       "mocha",
       "chai",
       "node"
     ],
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
     "lib": [
       "esnext", 
       "dom"
     ]
   },
   "include": [
-    "src",
-    "bin",
-    "test"
+    "src"
   ],
   "exclude": [
     "node_modules"

@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { sqlizeListParams } from '../src/utils'
-import { db } from './00_init.spec'
+import { db } from '../src/db'
 
 
 describe('* Test data ============================', () => {

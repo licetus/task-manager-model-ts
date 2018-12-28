@@ -8,9 +8,9 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "build": "",
+    "build": "ts-node bin/build.ts; tsc --build",
     "initdb": "ts-node bin/init.ts",
-    "test": "_mocha -r ts-node/register ./test/*.spec.ts"
+    "test": "NODE_ENV=test _mocha -r ts-node/register ./test/*.spec.ts"
   },
   "dependencies": {
     "bluebird": "^3.5.3",

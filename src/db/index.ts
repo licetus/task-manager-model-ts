@@ -1,7 +1,7 @@
 import pgPromise from 'pg-promise'
 import { findIndex } from 'lodash'
 import { ClientConfig, QueryConfig } from 'pg'
-import config from '../../test/config/config.json'
+import config from './config.json'
 
 const pgp = pgPromise({
   error(err, e) {
@@ -82,8 +82,8 @@ export interface DatabaseConfig {
 }
 
 export class Database {
-  readonly database: { postgres: PgClientConfig[] }
-  readonly secret?: any = { hash: '' }
+  private database: { postgres: PgClientConfig[] }
+  private secret?: any = { hash: '' }
   private localClientConfig: PgClientConfig
 
   constructor(dbConfig?: DatabaseConfig) {
@@ -105,7 +105,7 @@ export class Database {
       return configs[0]
     }
     else {
-      // console.log(`Set default client config [${configs[index].database}]`)
+      console.log(`Set default client config [${configs[index].database}]`)
       return configs[index]
     }
   }
@@ -139,8 +139,7 @@ export class Database {
     }
   }
 
-  public transaction = async (actions: Function, dbname?: string) => {
-    const client = new Database(config as Database)
+  public transaction = async (client: Database, actions: Function) => {
     try {
       await client.query('BEGIN')
       const res = await actions(client)
@@ -153,3 +152,5 @@ export class Database {
     }
   }
 }
+console.log(process.env.NODE_ENV)
+export const db = new Database(process.env.NODE_ENV === 'test' ? require('../../test/config/config.json') : null)

@@ -1,9 +1,7 @@
 import { snakeCase, cloneDeep } from 'lodash'
 import { sqlizeListParams } from '../utils'
-import { Database } from '../db'
+import { db } from '../db'
 import error from '../errors'
-
-const db = new Database()
 
 const ERRORS = {
   InvalidId: 400,
@@ -37,7 +35,6 @@ export abstract class DataModel {
   protected returnCreateTime: boolean = true
   protected returnLastUpdateTime: boolean = true
   protected pkey: string = 'id'
-
   abstract props: any = {}
 
   constructor(schemaName: string, tableName: string, config?: DataConfig) {
@@ -48,7 +45,7 @@ export abstract class DataModel {
     if (config && config.returnLastUpdateTime) this.returnLastUpdateTime = config.returnLastUpdateTime
     if (config && config.pkey) this.pkey = config.pkey
   }
-
+  
   private setPkeyValue(val: string) {
     this.props[this.pkey] = val
   }

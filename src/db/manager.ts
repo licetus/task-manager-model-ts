@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Database, DatabaseConfig } from '../db'
+import { db, Database, DatabaseConfig } from '../db'
 
 interface PgManagerConfig {
   pgConfig?: DatabaseConfig
@@ -10,55 +10,49 @@ interface PgManagerConfig {
 export class PgManager {
   public version?: string | number
 
-  private pgConfig?: DatabaseConfig
-  private db: Database
   constructor(config?: PgManagerConfig) {
     if (config) {
       if (config.version) {
         this.version = config.version
       }
-      if (config.pgConfig) {
-        this.pgConfig = config.pgConfig
-      }
     }
-    this.db = new Database(this.pgConfig)
   }
   private async dropDbIfExists() {
-    const dbname = this.db.getLocalDatabase()
+    const dbname = db.getLocalDatabase()
     const queryTerminate = `
 			SELECT pg_terminate_backend(pg_stat_activity.pid)
 			FROM pg_stat_activity
 			WHERE pg_stat_activity.datname = $1
 			;`
-    await this.db.query('postgres', queryTerminate, [dbname])
+    await db.query('postgres', queryTerminate, [dbname])
     const queryDrop = `DROP DATABASE IF EXISTS "${dbname}";`
-    await this.db.query('postgres', queryDrop)
+    await db.query('postgres', queryDrop)
   }
 
   private async createDbIfNotExist() {
-    const dbname = this.db.getLocalDatabase()
+    const dbname = db.getLocalDatabase()
     const queryCheck = `
       SELECT 1 AS exists
       FROM pg_database
       WHERE datname = $1
     `
-    const res = await this.db.query('postgres', queryCheck, [dbname])
+    const res = await db.query('postgres', queryCheck, [dbname])
     if (res.rowCount === 0) {
       const queryCreate = `CREATE DATABASE "${dbname}"`
-      await this.db.query('postgres', queryCreate)
+      await db.query('postgres', queryCreate)
     }
   }
 
-  private async getCurrentVersion() {
+  public async getCurrentVersion() {
     const queryCheck = `
       SELECT 1 AS exists FROM pg_class WHERE relname = 'version'
     `
-    const resCheck = await this.db.query(queryCheck)
+    const resCheck = await db.query(queryCheck)
     if (resCheck.rowCount === 0) {
       return -1
     }
     const queryGetVersion = 'SELECT ver FROM version ORDER BY ver DESC LIMIT 1;'
-    const resVersion = await this.db.query(queryGetVersion)
+    const resVersion = await db.query(queryGetVersion)
     if (resVersion.rowCount === 0) {
       return -1
     }
@@ -100,8 +94,7 @@ export class PgManager {
   public async update() {
     await this.createDbIfNotExist()
     const patchFolders = await this.getPatchFolders()
-    await this.db.transaction(async () => {
-      const client = new Database(this.pgConfig)
+    await db.transaction(db, async () => {
       for (const patchFolder of patchFolders) {
         const patchVer = patchFolder[0] as number
         const patchPath = patchFolder[1] as string
@@ -111,14 +104,14 @@ export class PgManager {
         if (files.includes('update.js')) {
           const updatorPath = '.' + path.join(patchPath, 'update.js').slice(__dirname.length)
           const updator = require(updatorPath)
-          await updator.putPatch(client)
+          await updator.putPatch(db)
         } else if (files.includes('query.sql')) {
           const query = fs.readFileSync(path.join(patchPath, 'query.sql'), 'utf8')
-          await client.query(query)
+          await db.query(query)
         } else {
           continue
         }
-        await this.updateVersion(client, patchVer)
+        await this.updateVersion(db, patchVer)
       }
     })
   }
