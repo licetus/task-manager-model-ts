@@ -65,7 +65,7 @@ export class PgManager {
     const patchMainPath = path.join(__dirname, 'patches')
     const currentVer = await this.getCurrentVersion()
     const clusters = fs.readdirSync(patchMainPath)
-    const patchFolders = []
+    const patchFolders: any[] = []
     for (const c of clusters) {
       if (c.charAt(0) === '.') continue
       const folders = fs.readdirSync(path.join(patchMainPath, c))

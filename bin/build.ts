@@ -1,9 +1,11 @@
 import { promisify } from 'bluebird'
-import del from 'del'
+import { ncp } from 'ncp'
 
 const copy = async () => {
-  const n: any = promisify(require('ncp').ncp)
-  await n('src/db/patches', 'dist/patches')
+  const n: any = promisify(ncp)
+  await n('src/db/patches', 'dist/db/patches', (err: Error) => {
+    console.log('err', err)
+  })
   // add models
 }
 
@@ -14,7 +16,6 @@ const format = (time: Date) => {
 const build = async () => {
   const start = new Date()
   console.log(`[${format(start)}] cleanup...`)
-  await del(['.tmp', 'dist/*', '!dist/,git'], { dot: true })
   console.log(`[${format(start)}] Starting build...`)
   await copy()
   const end = new Date()
@@ -22,6 +23,6 @@ const build = async () => {
   console.log(`[${format(end)}] Finished build after ${eslapse} ms`)
 }
 
-build().catch(err => {
-  console.error(err.stack)
+build().catch((err) => {
+  console.log(err)
 })

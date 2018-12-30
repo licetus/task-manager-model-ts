@@ -8,7 +8,7 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "build": "ts-node bin/build.ts; tsc --build",
+    "build": "rm -rf dist; mkdir dist; tsc --build; ts-node bin/build.ts",
     "initdb": "ts-node bin/init.ts",
     "test": "NODE_ENV=test _mocha -r ts-node/register ./test/*.spec.ts"
   },
