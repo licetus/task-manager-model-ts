@@ -1,7 +1,7 @@
 import { snakeCase, cloneDeep } from 'lodash'
 import { sqlizeListParams } from '../utils'
 import { db } from '../db'
-import error from '../errors'
+import { error } from '../errors'
 
 const ERRORS = {
   InvalidId: 400,
@@ -193,6 +193,6 @@ export abstract class DataModel {
   }
 
   static async transaction(actions: any) {
-    await db.transaction(actions)
+    await db.transaction(db, actions)
   }
 }
