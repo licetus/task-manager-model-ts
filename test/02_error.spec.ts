@@ -1,30 +1,31 @@
-import { error } from '../src/errors'
+import errors from '../src/errors'
 
 
 describe('* Error =======================', () => {
   const ERRORS = {
     Test: 400,
   }
+  errors.register(ERRORS)
+
   it('create error', () => {
-    error.register(ERRORS)
-    error.should.have.property('TestError')
+    errors.should.have.property('TestError')
   })
   it('throw error', () => {
     // process.env.NODE_LOCALES = 'zh-cn'
-    const m = error.lang({
+    const m = errors.lang({
       name: 'TestError'
     })
-    const e = new error.TestError(m)
-    e.name.should.equal('TestError')
+    const t = new errors.TestError(m)
+    t.name.should.equal('TestError')
     switch (process.env.NODE_LOCALES) {
       case 'zh-cn':
-        e.message.should.equal('这是一个测试用异常')
+        t.message.should.equal('这是一个测试用异常')
         break
       case 'en-US':
-        e.message.should.equal('This is a test error.')
+        t.message.should.equal('This is a test error.')
     }
     const f = function() {
-      throw e
+      throw t
     }
     f.should.Throw()
   })
