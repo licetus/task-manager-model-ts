@@ -2,7 +2,7 @@
   "name": "task-manager-model-ts",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "engines": {
     "node": "10.15.0",
     "npm": "6.4.1"
