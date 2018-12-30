@@ -1,4 +1,4 @@
-const e: any = require('restify-errors')
+export const errors: any = require('restify-errors')
 
 const normalize = (name: string) => {
   if (!name.endsWith('Error')) {
@@ -7,7 +7,7 @@ const normalize = (name: string) => {
   return name
 }
 
-e.lang = (error: { name: string, message?: string }) => {
+errors.lang = (error: { name: string, message?: string }) => {
   const locale = process.env.NODE_LOCALES || 'en-US'
   const locales = require(`./locale.${locale}.json`)
   if (error.message) {
@@ -18,23 +18,21 @@ e.lang = (error: { name: string, message?: string }) => {
   }
 }
 
-e.register = (errors: any) => {
+errors.register = (errors: any) => {
   Object.keys(errors).forEach((key) => {
     const config = errors[key]
     const errorName = normalize(key)
     switch (typeof config) {
       case 'number':
-        e[errorName] = e.makeConstructor(errorName, {
+        errors[errorName] = errors.makeConstructor(errorName, {
           statusCode: config,
         })
         break
       case 'object':
-        e[errorName] = e.makeConstructor(errorName, config)
+        errors[errorName] = errors.makeConstructor(errorName, config)
         break
       default:
         throw new Error(`Invalid error config for ${errorName}`)
     }
   })
 }
-
-export default e
