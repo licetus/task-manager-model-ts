@@ -1,6 +1,8 @@
-import { makeConstructor } from 'restify-errors'
+import { makeConstructor, InternalError } from 'restify-errors'
 
 class Errors {
+  public InternalError = InternalError
+
   public localization: { [errorName: string]: string }
   [errorName: string]: any
 

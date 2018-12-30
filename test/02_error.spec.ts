@@ -10,7 +10,7 @@ describe('* Error =======================', () => {
   it('create error', () => {
     errors.should.have.property('TestError')
   })
-  it('throw error', () => {
+  it('throw cuztomized error', () => {
     // process.env.NODE_LOCALES = 'zh-cn'
     const m = errors.lang({
       name: 'TestError'
@@ -26,6 +26,12 @@ describe('* Error =======================', () => {
     }
     const f = function() {
       throw t
+    }
+    f.should.Throw()
+  })
+  it('throw internal error', () => {
+    const f = function () {
+      throw new errors.InternalError()
     }
     f.should.Throw()
   })
