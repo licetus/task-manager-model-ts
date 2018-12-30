@@ -1,7 +1,7 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import log4js from 'log4js'
-import { PgManager } from '../src/db/manager'
+import { Manager } from '../'
 
 chai.use(chaiAsPromised)
 chai.should()
@@ -15,7 +15,7 @@ export const checkObject = (obj: any, data: any) => {
 }
 
 before (async() => {
-  const pgManager = new PgManager()
+  const pgManager = new Manager.PgManager()
   await pgManager.rebuild()
   log.info(`Current db version: ${pgManager.version}`)
 })

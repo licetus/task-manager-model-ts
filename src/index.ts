@@ -1,9 +1,11 @@
-import * as Models from './models'
+import * as Model from './models'
 import * as Manager from './db/manager'
+import { db } from './db'
 import errors from './errors'
 
 export {
-  Models,
+  db,
+  Model,
   Manager,
-  errors,
+  errors
 }

@@ -1,5 +1,5 @@
 import { checkObject } from './00_init.spec'
-import { Task } from '../src/models/task'
+import { Model } from '../'
 
 
 const taskDataAdd = { isCompleted: true, title: 'test title', content: 'test content', deadline: 2147483656 }
@@ -11,7 +11,7 @@ describe('* task =======================', () => {
   describe('  task: create/update/fetch/delete', () => {
     it('Create(save)', async () => {
       const data = taskDataAdd
-      const object = await new Task(data).save()
+      const object = await new Model.Task(data).save()
       object.props.should.have.property('id')
       taskId = object.props.id as number
       checkObject(object.props, data)
@@ -20,22 +20,22 @@ describe('* task =======================', () => {
       const data = Object.assign({
         id: taskId
       }, taskDataUpdate)
-      await new Task(data).update()
-      const res = await new Task().get(taskId)
+      await new Model.Task(data).update()
+      const res = await new Model.Task().get(taskId)
       checkObject(res, taskDataUpdate)
     })
     it('Fetch', async () => {
-      let res = await new Task().getList()
+      let res = await new Model.Task().getList()
       res.should.have.property('length')
       res.length.should.above(0)
-      res = await new Task().get(taskId)
+      res = await new Model.Task().get(taskId)
       checkObject(res, taskDataUpdate)
     })
 
     it('Delete', async () => {
       const id = taskId
-      await new Task().delete(id)
-      const isExist = await new Task().isExist(id)
+      await new Model.Task().delete(id)
+      const isExist = await new Model.Task().isExist(id)
       isExist.should.equal(false)
     })
   })

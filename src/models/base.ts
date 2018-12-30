@@ -20,7 +20,7 @@ export interface ListParams {
   filters?: string[]
 }
 
-interface DataConfig {
+export interface DataConfig {
   independentId?: boolean
   returnCreateTime?: boolean
   returnLastUpdateTime?: boolean

@@ -1,4 +1,4 @@
-import errors from '../src/errors'
+import { errors } from '../'
 
 
 describe('* Error =======================', () => {
