@@ -24,6 +24,7 @@ class Errors {
       return this.localization[name]
     }
   }
+
   public register = (errors: any) => {
     Object.keys(errors).forEach((key) => {
       const config = errors[key]
@@ -41,6 +42,13 @@ class Errors {
           throw new Error(`Invalid error config for ${errorName}`)
       }
     })
+  }
+
+  public update = (localization: { [errorName: string]: string }) => {
+    this.localization = Object.keys(localization).reduce((previousLocalization, key) => {
+      previousLocalization[key] = localization[key]
+      return previousLocalization
+    }, this.localization)
   }
 }
 
