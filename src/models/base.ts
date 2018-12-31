@@ -62,12 +62,12 @@ export abstract class DataModel {
   }
 
   private generateResult(data: any) {
-    const res = {} as any
+    const res: {[key: string]: any} = {}
     this.schema.forEach((key) => {
       res[key] = data[snakeCase(key)]
     })
-    if (this.returnCreateTime) res.createTime = data.create_time
-    if (this.returnLastUpdateTime) res.lastUpdateTime = data.last_update_time
+    if (this.returnCreateTime) res['createTime'] = data.create_time
+    if (this.returnLastUpdateTime) res['lastUpdateTime'] = data.last_update_time
     return res
   }
 
@@ -117,13 +117,6 @@ export abstract class DataModel {
     if (res.rowCount <= 0) throw new errors.DatabaseUpdateFailedError()
   }
 
-  public async getByKey(key: string, value: string | number) {
-    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${key} = $1;`
-    const res = await db.query(query, [value])
-    if (res.rowCount <= 0) throw new errors.DatabaseFetchFailedError()
-    return this.generateResult(res.rows[0])
-  }
-
   public async getViewList(viewName: string, pkey: string, params: any) {
     const paramsString = sqlizeListParams(pkey, params)
     const query = `SELECT * from "${this.schemaName}".${viewName} ${paramsString};`
@@ -141,8 +134,10 @@ export abstract class DataModel {
   }
 
   public async get(pkeyValue: number) {
-    const res = await this.getByKey(this.pkey, pkeyValue)
-    return res
+    const filters = [`${this.pkey} = ${pkeyValue}`]
+    const res = await this.getViewList(this.tableName, this.pkey, { filters })
+    if (res.length > 0) return res[0]
+    throw new errors.InvalidIdError()
   }
   
   public async getList(params?: any) {

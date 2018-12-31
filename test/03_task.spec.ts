@@ -25,10 +25,10 @@ describe('* task =======================', () => {
       checkObject(res, taskDataUpdate)
     })
     it('Fetch', async () => {
-      let res = await new Model.Task().getList()
-      res.should.have.property('length')
-      res.length.should.above(0)
-      res = await new Model.Task().get(taskId)
+      const resList = await new Model.Task().getList()
+      resList.should.have.property('length')
+      resList.length.should.above(0)
+      const res = await new Model.Task().get(taskId)
       checkObject(res, taskDataUpdate)
     })
 
