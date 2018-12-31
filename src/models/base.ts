@@ -35,7 +35,8 @@ export abstract class DataModel {
   protected returnCreateTime: boolean = true
   protected returnLastUpdateTime: boolean = true
   protected pkey: string = 'id'
-  abstract props: any = {}
+  abstract props: { [key: string]: any }
+  abstract schema: string[]
 
   constructor(schemaName: string, tableName: string, config?: DataConfig) {
     this.schemaName = schemaName
@@ -50,11 +51,9 @@ export abstract class DataModel {
     this.props[this.pkey] = val
   }
 
-  abstract getShema(): string[]
-
   private generateResult(data: any) {
     const res = {} as any
-    this.getShema().forEach((key) => {
+    this.schema.forEach((key) => {
       res[key] = data[snakeCase(key)]
     })
     if (this.returnCreateTime) res.createTime = data.create_time
@@ -160,7 +159,7 @@ export abstract class DataModel {
           await this.create()
         } else {
           const object = await this.get(this.props[this.pkey])
-          this.getShema().forEach((key) => {
+          this.schema.forEach((key) => {
             if (key !== this.pkey) {
               if (!this.props[key]) this.props[key] = object[key]
             }

@@ -1,36 +1,29 @@
 import { DataModel } from './base'
 
-export interface TaskData {
-  id?: number
-  isCompleted?: boolean
-  title?: string
-  content?: string
-  deadline?: number
+export class TaskData {
+  id?: number = 0
+  isCompleted?: boolean = false
+  title?: string = ''
+  content?: string = ''
+  deadline?: number = 0
+  constructor(data?: any) {
+    if (data) {
+      if (data.id) this.id = data.id
+      if (data.isCompleted) this.isCompleted = data.isCompleted
+      if (data.title) this.title = data.title
+      if (data.content) this.content = data.content
+      if (data.deadline) this.deadline = data.deadline
+    }
+  }
 }
 
 export class Task extends DataModel {
-  props: TaskData = {}
-
-  private schema: string[] = [
-    'id',
-    'isCompleted',
-    'title',
-    'content',
-    'deadline',
-  ]
-  getShema(): string[] {
-    return this.schema
-  }
-
-  constructor(data?: TaskData) {
+  props: TaskData = new TaskData()
+  schema: string[] = Object.keys(this.props)
+  constructor(data?: any) {
     super('task', 'task')
     if (data) {
-      if (data.id) this.props.id = data.id
-      if (data.isCompleted) this.props.isCompleted = data.isCompleted
-      if (data.title) this.props.title = data.title
-      if (data.content) this.props.content = data.content
-      if (data.deadline) this.props.deadline = data.deadline
+      this.props = new TaskData(data)
     }
   }
-
 }
