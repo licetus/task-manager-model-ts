@@ -117,13 +117,6 @@ export abstract class DataModel {
     if (res.rowCount <= 0) throw new errors.DatabaseUpdateFailedError()
   }
 
-  public async get(pkeyValue: number) {
-    const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${this.pkey} = $1;`
-    const res = await db.query(query, [pkeyValue])
-    if (res.rowCount <= 0) throw new errors.DatabaseFetchFailedError()
-    return this.generateResult(res.rows[0])
-  }
-
   public async getByKey(key: string, value: string | number) {
     const query = `SELECT * FROM "${this.schemaName}".${this.tableName} WHERE ${key} = $1;`
     const res = await db.query(query, [value])
@@ -147,6 +140,11 @@ export abstract class DataModel {
     return res.rows[0].total
   }
 
+  public async get(pkeyValue: number) {
+    const res = await this.getByKey(this.pkey, pkeyValue)
+    return res
+  }
+  
   public async getList(params?: any) {
     const res = await this.getViewList(this.tableName, this.pkey, params)
     return res
