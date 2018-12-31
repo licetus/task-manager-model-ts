@@ -12,12 +12,22 @@ const ERRORS = {
 }
 errors.register(ERRORS)
 
-export interface ListParams {
+export class ListParams {
   page?: number
-  pageSize?: number
+  pagesize?: number
   next?: number
-  orderBy?: string
   filters?: string[]
+  orderBy?: string
+  constructor(data: any) {
+    if (data.page) this.page = data.page
+    if (data.pagesize) this.pagesize = data.pagesize
+    if (!data.page && data.next) {
+      this.page = undefined
+      this.next = data.next
+    }
+    if (data.filters) this.filters = data.filters
+    if (data.orderBy) this.orderBy = data.orderBy
+  }
 }
 
 export interface DataConfig {
@@ -121,7 +131,7 @@ export abstract class DataModel {
     return this.generateResult(res.rows[0])
   }
 
-  public async getList(params?: ListParams) {
+  public async getList(params?: any) {
     const paramsString = sqlizeListParams(this.pkey, params)
     const query = `SELECT * from "${this.schemaName}".${this.tableName} ${paramsString};`
     const res = await db.query(query)
@@ -130,7 +140,7 @@ export abstract class DataModel {
     })
   }
 
-  public async getViewList(viewName: string, pkey: string, params: ListParams) {
+  public async getViewList(viewName: string, pkey: string, params: any) {
     const paramsString = sqlizeListParams(pkey, params)
     const query = `SELECT * from "${this.schemaName}".${viewName} ${paramsString};`
     const res = await db.query(query)
@@ -139,14 +149,14 @@ export abstract class DataModel {
     })
   }
 
-  public async getViewListCount(viewName: string, pkey: string, params: ListParams) {
+  public async getViewListCount(viewName: string, pkey: string, params: any) {
     const paramsString = sqlizeListParams(pkey, params, true)
     const query = `SELECT COUNT(*) as total from "${this.schemaName}".${viewName} ${paramsString};`
     const res = await db.query(query)
     return res.rows[0].total
   }
 
-  public async getListCount(params: ListParams) {
+  public async getListCount(params: any) {
     const res = await this.getViewListCount(this.tableName, this.pkey, params)
     return res
   }

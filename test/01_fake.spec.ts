@@ -40,23 +40,22 @@ describe('* Test generate list params =============', () => {
       filters: [`wow LIKE '%TEMP%'`, 'userId >= 1', `userName = 'Lily'`, 'users @> array[1]'],
     }
     const string = sqlizeListParams('id', params)
-    const answer = ['%TEMP%', 1, 'Lily']
     string.should.equal(` WHERE wow LIKE '%TEMP%' AND user_id >= 1 AND user_name = 'Lily' AND users @> array[1] ORDER BY id DESC `)
   })
 
   it('Check count', () => {
     const params = {
       next: 100,
-      pageSize: 1,
+      pagesize: 1,
       orderBy: 'id desc'
     }
     const str = sqlizeListParams('id', params, true)
-    console.log(str)
+    str.should.equal('   ')
   })
 
   it('Check order', () => {
     const params = {
-      pageSize: 10,
+      pagesize: 10,
       orderBy: 'id desc',
     }
     const string = sqlizeListParams('id', params)

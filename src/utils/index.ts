@@ -1,11 +1,11 @@
 import { snakeCase } from 'lodash'
 import { ListParams } from '../models/base'
 
-export const sqlizeListParams = (primaryKey: string, params?: ListParams, isSum = false) => {
-  if (!params) return ''
+export const sqlizeListParams = (primaryKey: string, parameters?: any, isSum = false) => {
+  if (!parameters) return ''
+  const params = new ListParams(parameters)
   const pKey = snakeCase(primaryKey)
   const arr: string[] = []
-  const values: (string | number)[] = []
   let orderBy = ''
   let limit = ''
   if (!isSum) {
@@ -20,16 +20,16 @@ export const sqlizeListParams = (primaryKey: string, params?: ListParams, isSum 
     } else {
       orderBy = `ORDER BY ${pKey} DESC`
     }
-    if (params.page || params.page === 0) {
-      const pageSize = params.pageSize || 10
-      limit = `LIMIT ${pageSize} OFFSET ${params.page * pageSize}`
-    } else if (params.next || params.next === 0) {
+    if (params.page) {
+      const pagesize = params.pagesize || 10
+      limit = `LIMIT ${pagesize} OFFSET ${params.page * pagesize}`
+    } else if (params.next) {
       orderBy = `ORDER BY ${pKey} DESC`
-      const pageSize = params.pageSize || 10
-      limit = `LIMIT ${pageSize}`
+      const pagesize = params.pagesize || 10
+      limit = `LIMIT ${pagesize}`
       arr.push(`${pKey} < ${params.next}`)
-    } else if (params.pageSize) {
-      limit = `LIMIT ${params.pageSize}`
+    } else if (params.pagesize) {
+      limit = `LIMIT ${params.pagesize}`
     }
   }
   if (params.filters && params.filters.length > 0) {
