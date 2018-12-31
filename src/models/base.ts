@@ -131,15 +131,6 @@ export abstract class DataModel {
     return this.generateResult(res.rows[0])
   }
 
-  public async getList(params?: any) {
-    const paramsString = sqlizeListParams(this.pkey, params)
-    const query = `SELECT * from "${this.schemaName}".${this.tableName} ${paramsString};`
-    const res = await db.query(query)
-    return res.rows.map((item) => {
-      return this.generateResult(item)
-    })
-  }
-
   public async getViewList(viewName: string, pkey: string, params: any) {
     const paramsString = sqlizeListParams(pkey, params)
     const query = `SELECT * from "${this.schemaName}".${viewName} ${paramsString};`
@@ -154,6 +145,11 @@ export abstract class DataModel {
     const query = `SELECT COUNT(*) as total from "${this.schemaName}".${viewName} ${paramsString};`
     const res = await db.query(query)
     return res.rows[0].total
+  }
+
+  public async getList(params?: any) {
+    const res = await this.getViewList(this.tableName, this.pkey, params)
+    return res
   }
 
   public async getListCount(params: any) {
