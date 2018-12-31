@@ -62,6 +62,7 @@ export abstract class DataModel {
   }
 
   private generateResult(data: any) {
+    console.log(data)
     const res: {[key: string]: any} = {}
     this.schema.forEach((key) => {
       res[key] = data[snakeCase(key)]
@@ -84,12 +85,17 @@ export abstract class DataModel {
   }
 
   public async create() {
-    if (this.independentId) {
-      if (this.props[this.pkey]) delete this.props[this.pkey]
+    let props: {[key: string]: any} = {}
+    if (this.independentId) { // TODO independentId or independentPkey?
+      Object.keys(this.props).forEach((key) => {
+        if (key !== 'id') props[key] = this.props[key]
+      })
+    } else {
+      props = this.props
     }
-    const propKeys = Object.keys(this.props).map((prop) => snakeCase(prop)).join(',')
-    const propIndex = Object.keys(this.props).map((prop, index) => `$${index + 1}`).join(',')
-    const propValues = Object.values(this.props)
+    const propKeys = Object.keys(props).map((prop) => snakeCase(prop)).join(',')
+    const propIndex = Object.keys(props).map((prop, index) => `$${index + 1}`).join(',')
+    const propValues = Object.values(props)
     const query = `
       INSERT INTO "${this.schemaName}".${this.tableName} (
         ${propKeys}
@@ -171,7 +177,7 @@ export abstract class DataModel {
     } catch (err) {
       throw err
     }
-    return cloneDeep(this)
+    return cloneDeep(this).props
   }
 
   public async delete(pkeyValue: number) {
